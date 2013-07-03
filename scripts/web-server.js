@@ -6,13 +6,17 @@ var util = require('util'),
     url = require('url'),
     events = require('events');
 
-var DEFAULT_PORT = 8000;
+var DEFAULT_PORT = process.env.PORT || 8000;
+var DEFAULT_IP = process.env.IP || '0.0.0.0';
+var DEFAULT_URL = process.env.C9_USER ?
+    'http://'+process.env.C9_PROJECT+'.'+process.env.C9_USER+'.c9.io' :
+    'http://localhost:'+DEFAULT_PORT;
 
 function main(argv) {
   new HttpServer({
     'GET': createServlet(StaticServlet),
     'HEAD': createServlet(StaticServlet)
-  }).start(Number(argv[2]) || DEFAULT_PORT);
+  }).start(Number(argv[2]) || DEFAULT_PORT, DEFAULT_IP, DEFAULT_URL);
 }
 
 function escapeHtml(value) {
@@ -38,10 +42,10 @@ function HttpServer(handlers) {
   this.server = http.createServer(this.handleRequest_.bind(this));
 }
 
-HttpServer.prototype.start = function(port) {
+HttpServer.prototype.start = function(port, ip, url) {
   this.port = port;
-  this.server.listen(port);
-  util.puts('Http Server running at http://localhost:' + port + '/');
+  this.server.listen(port, ip);
+  util.puts('Http Server running at '+url+'/');
 };
 
 HttpServer.prototype.parseUrl_ = function(urlString) {
@@ -193,7 +197,7 @@ StaticServlet.prototype.sendDirectory_ = function(req, res, path) {
   }
   fs.readdir(path, function(err, files) {
     if (err)
-      return self.sendError_(req, res, error);
+      return self.sendError_(req, res, err);
 
     if (!files.length)
       return self.writeDirectoryIndex_(req, res, path, []);
