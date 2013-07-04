@@ -10,7 +10,6 @@ angular.module('geomapApp.services', []).
     value('version', '0.1').
     factory('googleData', ['$q', '$rootScope', function($q, $scope) {
         return function(dataSourceUrl, select) {
-            // Specify that we want to use the XmlHttpRequest object to make the query.
             var opts = {sendMethod: 'auto'};
             // dataSourceUrl is something like:
             // https://docs.google.com/spreadsheet/tq?key=<key>&gid=0
@@ -24,17 +23,14 @@ angular.module('geomapApp.services', []).
             // Use angular's defer mechanism to handle the asynchronous response in a manner
             // consistent with the rest of the app.
             var deferred = $q.defer();
-            // Send the query with a callback function.
+            // Send the query with a callback function that in turn uses $scope.$apply to force the callback
+            // into a suitable context for angularjs (otherwise the promise won't complete correctly)
             query.send(function (response) {
-                if (response.isError()) {
-                    $scope.$apply(function() {
-                        deferred.reject('Error in query: ' + response.getMessage() + '<br>' + response.getDetailedMessage());
-                    });
-                    return;
-                }
-                var table = response.getDataTable();
                 $scope.$apply(function() {
-                    deferred.resolve(table);
+                    if (response.isError()) {
+                        deferred.reject('Error in query: ' + response.getMessage() + '<br>' + response.getDetailedMessage());
+                    }
+                    deferred.resolve(response.getDataTable());
                 });
             });
             return deferred.promise;

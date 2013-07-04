@@ -1,0 +1,21 @@
+<p>This is the partial for view 2.</p>
+
+<div ng-hide="error" geo-map
+    table="dataTable"
+    model="mapModel"
+    columns="countryMapColumns"
+    options="mapOptions">
+</div>
+<div ng-hide="error" google-table
+    table="dataTable"
+    model="worldModel"
+    columns="countryMapColumns"
+    options="tableOptions">
+</div>
+<div ng-hide="error" google-table
+    table="colourTable"
+    model="colourModel"
+    options="tableOptions">
+</div>
+
+<div ng-show="error" ng-bind-html="error"></div>
