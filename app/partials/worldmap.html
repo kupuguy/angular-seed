@@ -1,4 +1,4 @@
-<p>This is the partial for view 2.</p>
+<div><span ng-repeat="(affiliate,colour) in colourMapping"><span style="color:white;background-color:{{colour.colour}}">&nbsp;{{affiliate}}&nbsp;</span> </span></div>
 
 <div ng-hide="error" geo-map
     table="dataTable"
@@ -7,5 +7,5 @@
     options="mapOptions"
     ui-event="{ 'map-regionClick': 'regionClick(e)', 'map-select': 'select(e)' }">
 </div>
-
 <div ng-show="error" ng-bind-html="error"></div>
+

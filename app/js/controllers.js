@@ -29,44 +29,55 @@ angular.module('geomapApp.controllers', []).
   }])
   
   
-  .controller('WorldMap', ['$scope', '$q', 'googleData', 'dataUrl', 'colourUrl', '$log', function($scope, $q, googleData, dataUrl, colourUrl, $log) {
+  .controller('WorldMap', ['$scope', '$q', '$routeParams', '$location', 'googleData', 'dataUrl', 'colourUrl', '$log',
+  'regionFromCountry',
+  function($scope, $q, $routeParams, $location, googleData, dataUrl, colourUrl, $log, regionFromCountry) {
     var select = 'SELECT A,D,COUNT(B) GROUP BY A,D';
     $scope.error = null;
     $scope.dataTable = null;
     $scope.colourTable = null;
+    $scope.colourMapping = null;
+    $scope.region = $routeParams.region||'world';
+    
     $scope.mapOptions = {
-        region:'world',
-        showLegend:false,
-        tooltip: { trigger: 'focus' }
+        region: $scope.region,
+        legend: 'none',
+        tooltip: {isHtml:true},
+        keepAspectRatio: true,
+        colorAxis: {minValue: 0}
     };
     $scope.$watch('colourTable', function() {
         if ($scope.colourTable) {
             var colours = [];
+            var values = [];
             var mapping = {};
             var table = $scope.colourTable;
             for (var rowNum=0; rowNum<table.getNumberOfRows(); rowNum++) {
                 var name = table.getValue(rowNum, 0);
-                var colour = parseInt(table.getValue(rowNum, 2), 16);
+                var colour = table.getValue(rowNum, 2);
                 colours.push(colour);
-                mapping[name] = colour;
+                values.push(rowNum);
+                mapping[name] = {index: rowNum, colour:colour};
             }
-            $scope.mapOptions['colors'] = colours;
+            $scope.mapOptions.colorAxis.colors = colours;
+            $scope.mapOptions.colorAxis.values = values;
+            $scope.mapOptions.colorAxis.maxValue = colours.length;
             $scope.colourMapping = mapping;
         }
-    })
+    });
     
     function calcColourIndex(dataTable, rowNum) {
         var affiliate = dataTable.getValue(rowNum, 1);
-        return $scope.colourMapping[affiliate]||0;
+        var colour = $scope.colourMapping[affiliate];
+        return colour?colour.index:0;
     }
     function calcDisplay(dataTable, rowNum) {
         var affiliate = dataTable.getValue(rowNum, 1);
-        var country = dataTable.getValue(rowNum, 0);
-        return country + '\nManaging Affiliate: '+affiliate;
+        return affiliate;
     }
     $scope.countryMapColumns = [0,
-        {calc:calcColourIndex, type:'number', label:'colour'},
-        {calc:calcDisplay, type:'string', label:'Info'}
+        {calc:calcColourIndex, type:'number'},
+        {calc:calcDisplay, type:'string', role:'tooltip', 'p': {'html':true}}
     ];
 
     // Use 'all' to combine promises so we can ensure that the colourTable is already available
@@ -81,10 +92,15 @@ angular.module('geomapApp.controllers', []).
     
     $scope.regionClick = function(e) {
         if(!e) { e = $scope.mapModel.event; }
-        $log.info('region click:' + e.region);
+        if ($scope.region=='world') {
+            $location.path('/region/'+regionFromCountry(e.region));
+        } else {
+            $location.path('/region/'+e.region);
+        }
     };
     $scope.select = function(e) {
-        $log.info('select:' + $scope.mapModel.geomap.getSelection().toString());
+        var selection = $scope.mapModel.map.getSelection();
+        $log.info('select:' + selection[0].row.toString());
     };
 
   }]);

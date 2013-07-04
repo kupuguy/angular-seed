@@ -5,12 +5,12 @@
 
 (function() {
 // inspired by angular-ui's directive for google maps
-function bindEvents(scope, model, prefix, eventsStr, googleObject, element) {
+function bindEvents(scope, modeldata, prefix, eventsStr, googleObject, element) {
     angular.forEach(eventsStr.split(' '), function (eventName) {
       var $event = { type: prefix + '-' + eventName };
     
       google.visualization.events.addListener(googleObject, eventName, function (evt) {
-        model.assign(scope, { 'event': evt});
+        modeldata.event = evt;
         element.triggerHandler($event.type, angular.extend({}, $event, evt));
     
         //We create an $apply if it isn't happening. we need better support for this
@@ -44,15 +44,15 @@ angular.module('geomapApp.directives', ['ui.event']).
         table.draw(view, options);
  
         var model = $parse(attrs.model);
- 
-        //Set scope variable for the map
-        model.assign(scope, {
+        var modeldata = {
           'table' : table,
           'data' : data,
           'view' : view,
-        });
+        };
+        //Set scope variable for the map
+        model.assign(scope, modeldata);
         
-        bindEvents(scope, model, 'table', tableEvents, table, element);
+        bindEvents(scope, modeldata, 'table', tableEvents, table, element);
       });
     };
   }]).
@@ -72,19 +72,19 @@ angular.module('geomapApp.directives', ['ui.event']).
         if (columns) {
             view.setColumns(columns);
         }
-        var geomap = new google.visualization.GeoMap(element[0]);
+        var geomap = new google.visualization.GeoChart(element[0]);
         geomap.draw(view, options);
  
         var model = $parse(attrs.model);
- 
-        //Set scope variable for the map
-        model.assign(scope, {
+        var modeldata = {
           'map' : geomap,
           'data' : data,
           'view' : view,
-        });
+        };
+        //Set scope variable for the map
+        model.assign(scope, modeldata);
         
-        bindEvents(scope, model, 'map', events, geomap, element);
+        bindEvents(scope, modeldata, 'map', events, geomap, element);
       });
     };
   }]);
