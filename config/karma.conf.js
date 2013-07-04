@@ -12,7 +12,10 @@ files = [
 
 autoWatch = true;
 
-browsers = ['Chrome'];
+browsers = ['PhantomJS'];
+hostname = process.env.IP;
+port = process.env.PORT;
+runnerPort = 0;
 
 junitReporter = {
   outputFile: 'test_out/unit.xml',

@@ -10,12 +10,9 @@ Clone the geomap-angular repository and start hacking...
 
 ### Running the app during development
 
-You can pick one of these options:
+The project is configured to run on Cloud9, so the best bet is just to clone to c9.io and run `scripts/web-server.js`
 
-* serve this repository with your webserver
-* install node.js and run `scripts/web-server.js`
-
-Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
+Then navigate to `http://geomap.<username>.c9.io/app/index.html` to see the app running in
 your browser.
 
 
