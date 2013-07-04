@@ -5,9 +5,9 @@
 
 (function() {
 // inspired by angular-ui's directive for google maps
-function bindEvents(scope, model, eventsStr, googleObject, element) {
+function bindEvents(scope, model, prefix, eventsStr, googleObject, element) {
     angular.forEach(eventsStr.split(' '), function (eventName) {
-      var $event = { type: 'table-' + eventName };
+      var $event = { type: prefix + '-' + eventName };
     
       google.visualization.events.addListener(googleObject, eventName, function (evt) {
         model.assign(scope, { 'event': evt});
@@ -52,12 +52,12 @@ angular.module('geomapApp.directives', ['ui.event']).
           'view' : view,
         });
         
-        bindEvents(scope, model, tableEvents, table, element);
+        bindEvents(scope, model, 'table', tableEvents, table, element);
       });
     };
   }]).
   directive('geoMap', ['$parse', function($parse) {
-    var events = 'error select regionClick zoomOut drawingDone';
+    var events = 'error select regionClick ready';
  
     return function(scope, element, attrs) {
       scope.$watch(attrs.table, function(value) {
@@ -84,7 +84,7 @@ angular.module('geomapApp.directives', ['ui.event']).
           'view' : view,
         });
         
-        bindEvents(scope, model, events, geomap, element);
+        bindEvents(scope, model, 'map', events, geomap, element);
       });
     };
   }]);

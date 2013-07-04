@@ -4,18 +4,8 @@
     table="dataTable"
     model="mapModel"
     columns="countryMapColumns"
-    options="mapOptions">
-</div>
-<div ng-hide="error" google-table
-    table="dataTable"
-    model="worldModel"
-    columns="countryMapColumns"
-    options="tableOptions">
-</div>
-<div ng-hide="error" google-table
-    table="colourTable"
-    model="colourModel"
-    options="tableOptions">
+    options="mapOptions"
+    ui-event="{ 'map-regionClick': 'regionClick(e)', 'map-select': 'select(e)' }">
 </div>
 
 <div ng-show="error" ng-bind-html="error"></div>
