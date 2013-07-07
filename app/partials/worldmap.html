@@ -1,11 +1,13 @@
 <div><span ng-repeat="(affiliate,colour) in colourMapping"><span style="color:white;background-color:{{colour.colour}}">&nbsp;{{affiliate}}&nbsp;</span> </span></div>
 
-<div ng-hide="error" geo-map
+<div class="map" ng-hide="error" geo-map
     table="dataTable"
     model="mapModel"
     columns="countryMapColumns"
     options="mapOptions"
     ui-event="{ 'map-regionClick': 'regionClick(e)', 'map-select': 'select(e)' }">
 </div>
-<div ng-show="error" ng-bind-html="error"></div>
+<div class="info"><div ng-repeat="row in currentSelection"><b ng-bind="row.label"></b> <span ng-bind="row.value"></span></div></div>
+
+<div class="error" ng-show="error" ng-bind-html="error"></div>
 

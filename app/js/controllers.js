@@ -4,7 +4,9 @@
 /* Controllers */
 
 angular.module('geomapApp.controllers', []).
-  controller('TableOverviewCtrl', ['$scope', '$log', 'dataUrl', 'googleData', function($scope, $log, dataUrl, googleData) {
+  controller('TableOverviewCtrl', ['$scope', '$rootScope', '$routeParams', '$log', 'dataUrl', 'googleData',
+    function($scope, $rootScope, $routeParams, $log, dataUrl, googleData) {
+    $rootScope.key = $routeParams.key;
     $scope.url = dataUrl;
     
     $scope.tableSelect = function(e) {
@@ -29,22 +31,27 @@ angular.module('geomapApp.controllers', []).
   }])
   
   
-  .controller('WorldMap', ['$scope', '$q', '$routeParams', '$location', 'googleData', 'dataUrl', 'colourUrl', '$log',
-  'regionFromCountry',
-  function($scope, $q, $routeParams, $location, googleData, dataUrl, colourUrl, $log, regionFromCountry) {
-    var select = 'SELECT A,D,COUNT(B) GROUP BY A,D';
+  .controller('WorldMap', ['$scope', '$q', '$routeParams', '$location', '$rootScope', 'googleData', 'dataUrl', 'colourUrl', '$log',
+  'regionFromCountry', 'regionName',
+  function($scope, $q, $routeParams, $location, $rootScope, googleData, dataUrl, colourUrl, $log, regionFromCountry, regionName) {
+    var select = 'SELECT A,B,COUNT(C) GROUP BY A,B';
     $scope.error = null;
     $scope.dataTable = null;
     $scope.colourTable = null;
     $scope.colourMapping = null;
-    $scope.region = $routeParams.region||'world';
-    
+    $scope.currentSelection = null;
+    $scope.country = $routeParams.region|| $routeParams.country ||'world';
+    $rootScope.region = $routeParams.region||regionFromCountry($routeParams.country)||'world';
+    $rootScope.regionName = regionName($rootScope.region);
+    $rootScope.key = $routeParams.key;
+
     $scope.mapOptions = {
-        region: $scope.region,
+        region: $scope.country,
         legend: 'none',
         tooltip: {isHtml:true},
         keepAspectRatio: true,
-        colorAxis: {minValue: 0}
+        colorAxis: {minValue: 0},
+        width: 800
     };
     $scope.$watch('colourTable', function() {
         if ($scope.colourTable) {
@@ -75,10 +82,31 @@ angular.module('geomapApp.controllers', []).
         var affiliate = dataTable.getValue(rowNum, 1);
         return affiliate;
     }
+    function countryDisplay(dataTable, rowNum) {
+        var affiliate = dataTable.getValue(rowNum, 1);
+        var staff = dataTable.getValue(rowNum, 7);
+        var other = dataTable.getValue(rowNum, 8);
+        var other_staff = dataTable.getValue(rowNum, 9);
+        return affiliate + '(' + staff + '), ' + other + '(' + other_staff + ')'; 
+    }
     $scope.countryMapColumns = [0,
         {calc:calcColourIndex, type:'number'},
         {calc:calcDisplay, type:'string', role:'tooltip', 'p': {'html':true}}
     ];
+    function totalStaff(dataTable, rowNum) {
+        return dataTable.getValue(rowNum, 7) + dataTable.getValue(rowNum, 9);
+    }
+    $rootScope.region = null;
+    if ($routeParams.country) {
+        $rootScope.region = regionFromCountry($routeParams.country);
+        select = null;
+        $scope.countryMapColumns = [4, 5, // lat/long
+            2, // Title overrides lat/long for display.
+            {calc:calcColourIndex, type:'number'}, // Colour
+            {calc:totalStaff, type:'number'}, // Size
+            {calc:countryDisplay, type:'string', role:'tooltip', 'p': {'html':true}}
+        ];
+    }
 
     // Use 'all' to combine promises so we can ensure that the colourTable is already available
     // when the dataTable completes.
@@ -92,14 +120,25 @@ angular.module('geomapApp.controllers', []).
     
     $scope.regionClick = function(e) {
         if(!e) { e = $scope.mapModel.event; }
-        if ($scope.region=='world') {
-            $location.path('/region/'+regionFromCountry(e.region));
+        if ($scope.country=='world' || /^[0-9]+$/.test(e.region)) {
+            $location.path('/key/'+$rootScope.key+'/region/'+regionFromCountry(e.region));
         } else {
-            $location.path('/region/'+e.region);
+            $location.path('/key/'+$rootScope.key+'/country/'+e.region);
         }
     };
     $scope.select = function(e) {
-        var selection = $scope.mapModel.map.getSelection();
+        var map = $scope.mapModel.map;
+        var data = $scope.mapModel.data;
+        var selection = map.getSelection();
+        var row = selection[0].row;
+        var values = [];
+        values.push({label: data.getColumnLabel(0), value: data.getValue(row, 0)});
+        values.push({label: data.getColumnLabel(2), value: data.getValue(row, 2)});
+        values.push({label: data.getColumnLabel(1), value: data.getValue(row, 1)});
+        for(var col=6; col < data.getNumberOfColumns(); col++) {
+            values.push({label: data.getColumnLabel(col), value: data.getValue(row, col)});        
+        }
+        $scope.currentSelection = values;
         $log.info('select:' + selection[0].row.toString());
     };
 

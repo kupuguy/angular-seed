@@ -28,3 +28,15 @@
   content: "";
   padding: 0;
 }
+
+.map {
+    width: 800;
+    float:left;
+}
+.info {
+    width: 400;
+    float:left;
+}
+.error {
+    clear:both;
+}

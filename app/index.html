@@ -2,14 +2,16 @@
 <html lang="en" ng-app="geomapApp">
 <head>
   <meta charset="utf-8">
-  <title>My AngularJS App</title>
+  <title>GeoChart visualization</title>
   <link rel="stylesheet" href="css/app.css"/>
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 </head>
 <body>
   <ul class="menu">
-    <li><a href="#/region">map</a></li>
-    <li><a href="#/table">table</a></li>
+    <li nb-show="key"><a ng-href="#/key/{{key}}/region">world</a></li>
+    <li ng-show="region"><a ng-href="#/key/{{key}}/region/{{region}}">{{regionName}}</a></li>
+    <li ng-show="key"><a href="#/key/{{key}}/table">table</a></li>
+    <li ng-show="key"><a href="https://docs.google.com/spreadsheet/ccc?key={{key}}">spreadsheet</a></li>
   </ul>
 
   <div ng-view></div>
